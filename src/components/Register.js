@@ -1,25 +1,64 @@
-import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { getDiplomas } from "../api";
 
 export default function Register() {
-  const emailRef = useRef(null);
+  const navigate = useNavigate();
+  const nameRef = useRef();
+  const emailRef = useRef();
+  const courseRef = useRef();
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  const diplomas = getDiplomas(); // each diploma has {id, name, modules}
+  const [selectedCourse, setSelectedCourse] = useState("");
+
+  function submit(e) {
+    e.preventDefault();
+
+    if (!selectedCourse) {
+      alert("Please select a course.");
+      return;
+    }
+
+    // set the value in courseRef so it matches your existing logic
+    courseRef.current = { value: selectedCourse };
+
+    navigate("/confirmed", {
+      state: {
+        name: nameRef.current.value,
+        email: emailRef.current.value,
+        course: selectedCourse
+      }
+    });
   }
 
   return (
     <div className="container">
-      <h1>Register for Red30 Tech</h1>
-      <p>
-        Make sure to grab your spot for this year's conference! We love
-        technology and consistently work towards being the premier provider of
-        technology solutions and events that connect the world.
-      </p>
-      <form onSubmit={handleSubmit}>
+      <h1>Register Interest</h1>
+
+      <form onSubmit={submit}>
         <label>
-          Email:
-          <input type="text" name="email" ref={emailRef} />
+          Name
+          <input ref={nameRef} required />
         </label>
+
+        <label>
+          Email
+          <input type="email" ref={emailRef} required />
+        </label>
+
+        <label>Course</label>
+        <div className="course-grid">
+          {diplomas.map(d => (
+            <div
+              key={d.id}
+              className={`course-card ${selectedCourse === d.name ? "selected" : ""}`}
+              onClick={() => setSelectedCourse(d.name)}
+            >
+              {d.name}
+            </div>
+          ))}
+        </div>
+
         <input type="submit" value="Submit" />
       </form>
     </div>
